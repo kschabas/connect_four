@@ -1,12 +1,15 @@
 # frozen_string_literal: true
 
 # Connect 4 Game
+require './lib/board'
+
 class ConnectFour
   BOARD_WIDTH = 7
   BOARD_HEIGHT = 6
 
-  def initialize(board = Board.new)
+  def initialize(board = Board.new(BOARD_WIDTH, BOARD_HEIGHT))
     @board = board
+    @turn = 1
   end
 
   def play_game
@@ -20,18 +23,29 @@ class ConnectFour
   end
 
   def end_of_game
+    change_turn
+    puts "Player #{@turn} is the winner. Congratulations!"
   end
 
   def user_input
+    puts "Player #{@turn}: please input your move x,y\n"
+    gets.chomp.split(',').map(&:to_i)
   end
 
   def make_move(move)
+    @board.set(move[0], move[1], token)
+  end
+
+  def token
+    @turn == 1 ? 'B' : 'W'
   end
 
   def change_turn
+    @turn == 1 ? @turn = 2 : @turn = 1
   end
 
   def print_board
+    @board.print_board
   end
 
   def valid_space?(x, y)

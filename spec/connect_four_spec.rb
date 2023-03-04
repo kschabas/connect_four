@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require './lib/connect_four'
+require './lib/board'
 
 describe ConnectFour do
   describe '#play_game' do
@@ -11,6 +12,7 @@ describe ConnectFour do
       allow(test_game).to receive(:user_input)
       allow(test_game).to receive(:make_move)
       allow(test_game).to receive(:change_turn)
+      allow(test_game).to receive(:end_of_game).and_return(nil)
       allow(test_game).to receive(:print_board)
     end
 
@@ -172,6 +174,98 @@ describe ConnectFour do
         result = test_game.four_in_a_row?(x, y)
         expect(result).to be true
       end
+    end
+  end
+  describe 'horizontal_row' do
+    subject(:test_game) { described_class.new(test_board) }
+    let(:test_board) { double('Board') }
+    token = 'B'
+    x = 2
+    y = 2
+
+    before do
+      allow(test_game).to receive(:match?).with(x, y, token).and_return(true)
+      allow(test_game).to receive(:match?).with(x + 1, y, token).and_return(true)
+      allow(test_game).to receive(:match?).with(x + 2, y, token).and_return(true)
+    end
+
+    it 'valid row' do
+      allow(test_game).to receive(:match?).with(x + 3, y, token).and_return(true)
+      result = test_game.horizontal_row?(x, y, token)
+      expect(result).to be true
+    end
+    it 'row off the edge' do
+      allow(test_game).to receive(:match?).with(x + 3, y, token).and_return(false)
+      result = test_game.horizontal_row?(x, y, token)
+      expect(result).to be false
+    end
+  end
+  describe '#match? function' do
+    subject(:test_game) { described_class.new(test_board) }
+    let(:test_board) { double('Board') }
+    token = 'B'
+    it 'passes with a match' do
+      x = 2
+      y = 2
+      allow(test_board).to receive(:coord).with(x, y).and_return(token)
+      result = test_game.match?(x, y, token)
+      expect(result).to be true
+    end
+    it 'fails with a bad token' do
+      x = 2
+      y = 2
+      allow(test_board).to receive(:coord).with(x, y).and_return(token)
+      result = test_game.match?(x, y, 'W')
+      expect(result).to be false
+    end
+    it 'fails if bad range provided' do
+      x = 7
+      y = 2
+      allow(test_board).to receive(:coord).with(x, y).and_return(token)
+      result = test_game.match?(x, y, token)
+      expect(result).to be false
+    end
+    it 'fails if bad height provided' do
+      x = 2
+      y = 6
+      allow(test_board).to receive(:coord).with(x, y).and_return(token)
+      result = test_game.match?(x, y, token)
+      expect(result).to be false
+    end
+    it 'does not call coord if bad range' do
+      x = 7
+      y = 2
+      allow(test_board).to receive(:coord).with(x, y).and_return(token)
+      expect(test_board).not_to receive(:coord)
+      test_game.match?(x, y, token)
+    end
+  end
+  describe '#user_input' do
+    subject(:test_game) { described_class.new(test_board) }
+    let(:test_board) { double('Board') }
+    it 'reads input correctly' do
+      allow(test_game).to receive(:gets).and_return("2,3")
+      result = test_game.user_input
+      expect(result).to eq([2, 3])
+    end
+  end
+  describe 'change_turn' do
+    subject(:test_game) { described_class.new(test_board) }
+    let(:test_board) { double('Board') }
+    it 'is player 1 turn' do
+      expect{test_game.change_turn}.to change{ test_game.instance_variable_get(:@turn) }.to(2)
+    end
+    it 'is player 2 turn' do
+      test_game.instance_variable_set(:@turn, 2)
+      expect{test_game.change_turn}.to change{ test_game.instance_variable_get(:@turn) }.to(1)
+    end
+  end
+end
+describe Board do
+  describe '#initialize' do
+    subject(:test_board) { Board.new(2, 2) }
+    it 'check initialization' do
+      expect(test_board.instance_variable_get(:@board)).to eq([[nil, nil],[nil, nil]])
     end
   end
 end

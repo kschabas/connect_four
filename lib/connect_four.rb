@@ -15,11 +15,18 @@ class ConnectFour
   def play_game
     until winner?
       move = user_input
+      move << get_row_num(move[0])
       make_move(move)
       change_turn
       print_board
     end
     end_of_game
+  end
+
+  def get_row_num(col)
+    row = 0
+    row += 1 until @board.coord(col, row).nil?
+    row
   end
 
   def end_of_game
@@ -28,8 +35,9 @@ class ConnectFour
   end
 
   def user_input
-    puts "Player #{@turn}: please input your move x,y\n"
-    gets.chomp.split(',').map(&:to_i)
+    puts "Player #{@turn}: please input the column where you wish to insert a piece (0 to 6)\n"
+    result = []
+    result << gets.chomp.to_i
   end
 
   def make_move(move)
